@@ -1,0 +1,27 @@
+{
+  "name": "todomvc-es6-react-rxjs-elm-architecture",
+  "version": "0.0.0",
+  "description": "TodoMVC in ES6 / React / Rx.js with the Elm Architecture",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kamalmarhubi/todomvc-es6-react-rxjs-elm-architecture.git"
+  },
+  "keywords": [
+    "todomvc",
+    "react",
+    "es6",
+    "es7",
+    "rxjs",
+    "rx",
+    "elm"
+  ],
+  "author": "Kamal Marhubi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kamalmarhubi/todomvc-es6-react-rxjs-elm-architecture/issues"
+  }
+}

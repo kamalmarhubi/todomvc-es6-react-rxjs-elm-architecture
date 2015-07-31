@@ -38,9 +38,9 @@ var Task = Record({
 
 // Update
 
-const NoOp = () => model => model;
+const NoOp = model => model;
 const UpdateField = value => model => model.set("field", value);
-const Add = () => model => {
+const Add = model => {
     model = model.set("tasks", model.tasks.unshift(new Task({id: model.nextId, description: model.field})));
     model = model.set("nextId", model.nextId + 1);
     model = model.set("field", "");
@@ -96,9 +96,11 @@ let withTargetValue = f => evt => f(evt.target.value);
 class Thing {
     constructor(stream) {
         this.stream = stream;
+        this.emit = this.stream.onNext.bind(this.stream);
     }
 
-    withTargetValue = f => evt => f(evt.target.value, this.stream.onNext.bind(this.stream));
+    withTargetValue = f => evt => f(evt.target.value, this.emit);
+    withEmit = f => evt => f(this.emit);
 }
 
 const initialModel = new Model({tasks: List([new Task({description: "hi", id: -1})])});
@@ -114,7 +116,7 @@ class App extends React.Component {
         return <div>
             <input type="text" value={this.props.model.field}
         onChange={thing.withTargetValue((value, emit) => emit(UpdateField(value)))} />
-            <button onClick={() => this.props.actionStream.onNext(Add())}>+</button>
+            <button onClick={thing.withEmit(emit => emit(Add))}>+</button>
             <TaskList model={this.props.model} actionStream={actionStream} />
             <pre>{JSON.stringify(this.props.model.toJS(), null, 4)}</pre>
         </div>;

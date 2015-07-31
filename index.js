@@ -1,4 +1,5 @@
 import {Record, List} from "immutable";
+import {FuncSubject} from "rx-react";
 import reactMixin from "react-mixin";
 import Rx from "rx";
 import React from "react/addons";
@@ -94,31 +95,28 @@ class TaskC extends React.Component {
 
 let withTargetValue = f => evt => f(evt.target.value);
 
-class Thing {
-    constructor(stream) {
-        this.stream = stream;
-        this.emit = this.stream.onNext.bind(this.stream);
-    }
-
-    withTargetValue = f => evt => f(evt.target.value, this.emit);
-    withEmit = f => evt => f(this.emit);
-}
-
 let actionStream = new Rx.BehaviorSubject(NoOp);
-
-let thing = new Thing(actionStream);
-
 
 @PureRender
 class App extends React.Component {
-    static defaultProps = { model: 0 };
+    componentWillMount() {
+        let {actionStream} = this.props;
+
+        let onAdd = FuncSubject.create()
+          , onFieldChange = FuncSubject.create()
+        ;
+
+        Rx.Observable.merge(onAdd.map(evt => Add), onFieldChange.map(evt => UpdateField(evt.target.value))).subscribe(actionStream);
+
+        Object.assign(this, {onAdd, onFieldChange});
+    }
     render() {
+        let {model, actionStream} = this.props;
         return <div>
-            <input type="text" value={this.props.model.field}
-        onChange={thing.withTargetValue((value, emit) => emit(UpdateField(value)))} />
-            <button onClick={thing.withEmit(emit => emit(Add))}>+</button>
-            <TaskList model={this.props.model} actionStream={actionStream} />
-            <pre>{JSON.stringify(this.props.model.toJS(), null, 4)}</pre>
+            <input type="text" value={model.field} onChange={this.onFieldChange} />
+            <button onClick={this.onAdd}>+</button>
+            <TaskList model={model} actionStream={actionStream} />
+            <pre>{JSON.stringify(model.toJS(), null, 4)}</pre>
         </div>;
     }
 }
@@ -128,4 +126,4 @@ let modelStream = actionStream.scan(initialModel, (model, action) => {
     return action(model); });
 
 modelStream.subscribe(
-        model => React.render(<App model={model} actionStream={actionStream1} />, document.body));
+        model => React.render(<App model={model} actionStream={actionStream} />, document.body));

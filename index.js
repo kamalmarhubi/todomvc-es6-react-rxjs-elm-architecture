@@ -128,4 +128,4 @@ let modelStream = actionStream.scan(initialModel, (model, action) => {
     return action(model); });
 
 modelStream.subscribe(
-        newProps => React.render(<App model={newProps} actionStream={actionStream} />, document.body));
+        model => React.render(<App model={model} actionStream={actionStream1} />, document.body));

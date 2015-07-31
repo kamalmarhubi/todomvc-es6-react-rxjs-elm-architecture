@@ -4,7 +4,8 @@
   "description": "TodoMVC in ES6 / React / Rx.js with the Elm Architecture",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "node_modules/watchify/bin/cmd.js index.js --verbose --outfile bundle.js --transform [ babelify --optional=es7.classProperties,es7.decorators ]"
   },
   "repository": {
     "type": "git",
@@ -23,5 +24,16 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/kamalmarhubi/todomvc-es6-react-rxjs-elm-architecture/issues"
+  },
+  "devDependencies": {
+    "babelify": "^6.1.3",
+    "browserify": "^11.0.0",
+    "watchify": "^3.3.0"
+  },
+  "dependencies": {
+    "immutable": "^3.7.4",
+    "react": "^0.13.3",
+    "react-mixin": "^1.7.0",
+    "rx": "^2.5.3"
   }
 }

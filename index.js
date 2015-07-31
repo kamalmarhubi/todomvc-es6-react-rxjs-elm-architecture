@@ -35,6 +35,7 @@ var Task = Record({
     id: null
 });
 
+const initialModel = new Model({tasks: List([new Task({description: "hi", id: -1})])});
 
 // Update
 
@@ -103,8 +104,7 @@ class Thing {
     withEmit = f => evt => f(this.emit);
 }
 
-const initialModel = new Model({tasks: List([new Task({description: "hi", id: -1})])});
-let actionStream = new Rx.Subject();
+let actionStream = new Rx.BehaviorSubject(NoOp);
 
 let thing = new Thing(actionStream);
 
@@ -124,13 +124,8 @@ class App extends React.Component {
 }
 
 
-//actionStream.subscribe(x => console.log(x));
 let modelStream = actionStream.scan(initialModel, (model, action) => {
-    return action(model); })
-    .startWith(initialModel);
+    return action(model); });
 
 modelStream.subscribe(
         newProps => React.render(<App model={newProps} actionStream={actionStream} />, document.body));
-
-
-//React.render(<App />, document.body);

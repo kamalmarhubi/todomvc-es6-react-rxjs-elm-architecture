@@ -116,7 +116,7 @@ class App extends React.Component {
         onChange={thing.withTargetValue((value, emit) => emit(UpdateField(value)))} />
             <button onClick={() => this.props.actionStream.onNext(Add())}>+</button>
             <TaskList model={this.props.model} actionStream={actionStream} />
-            <pre>{JSON.stringify(this.props.model.toJS())}</pre>
+            <pre>{JSON.stringify(this.props.model.toJS(), null, 4)}</pre>
         </div>;
     }
 }

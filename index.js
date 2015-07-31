@@ -106,7 +106,10 @@ class App extends React.Component {
           , onFieldChange = FuncSubject.create()
         ;
 
-        Rx.Observable.merge(onAdd.map(evt => Add), onFieldChange.map(evt => UpdateField(evt.target.value))).subscribe(actionStream);
+        Rx.Observable.merge(
+                onAdd.map(evt => Add),
+                onFieldChange.map(evt => UpdateField(evt.target.value)))
+            .subscribe(actionStream);
 
         Object.assign(this, {onAdd, onFieldChange});
     }

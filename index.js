@@ -39,7 +39,7 @@ var Task = Record({
 // Update
 
 const NoOp = () => model => model;
-const UpdateField = evt => model => model.set("field", evt.target.value);
+const UpdateField = value => model => model.set("field", value);
 const Add = () => model => {
     model = model.set("tasks", model.tasks.unshift(new Task({id: model.nextId, description: model.field})));
     model = model.set("nextId", model.nextId + 1);
@@ -91,14 +91,29 @@ class TaskC extends React.Component {
     }
 }
 
+let withTargetValue = f => evt => f(evt.target.value);
+
+class Thing {
+    constructor(stream) {
+        this.stream = stream;
+    }
+
+    withTargetValue = f => evt => f(evt.target.value, this.stream.onNext.bind(this.stream));
+}
+
+const initialModel = new Model({tasks: List([new Task({description: "hi", id: -1})])});
+let actionStream = new Rx.Subject();
+
+let thing = new Thing(actionStream);
+
+
 @PureRender
 class App extends React.Component {
     static defaultProps = { model: 0 };
     render() {
         return <div>
-            <input type="text" value={this.props.model.field} onChange={ev =>
-                this.props.actionStream.onNext(model => model.set("field", ev.target.value))}
-                        />
+            <input type="text" value={this.props.model.field}
+        onChange={thing.withTargetValue((value, emit) => emit(UpdateField(value)))} />
             <button onClick={() => this.props.actionStream.onNext(Add())}>+</button>
             <TaskList model={this.props.model} actionStream={actionStream} />
             <pre>{JSON.stringify(this.props.model.toJS())}</pre>
@@ -106,13 +121,11 @@ class App extends React.Component {
     }
 }
 
-const initialModel = new Model({tasks: List([new Task({description: "hi", id: -1})])});
-let actionStream = new Rx.Subject();
+
+//actionStream.subscribe(x => console.log(x));
 let modelStream = actionStream.scan(initialModel, (model, action) => {
     return action(model); })
     .startWith(initialModel);
-
-//actionStream.subscribe(x => console.log(x));
 
 modelStream.subscribe(
         newProps => React.render(<App model={newProps} actionStream={actionStream} />, document.body));

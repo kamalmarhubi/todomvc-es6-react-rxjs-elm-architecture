@@ -97,6 +97,9 @@ let withTargetValue = f => evt => f(evt.target.value);
 
 let actionStream = new Rx.BehaviorSubject(NoOp);
 
+let modelStream = actionStream.scan(initialModel, (model, action) => {
+    return action(model); });
+
 @PureRender
 class App extends React.Component {
     componentWillMount() {
@@ -112,21 +115,19 @@ class App extends React.Component {
             .subscribe(actionStream);
 
         Object.assign(this, {onAdd, onFieldChange});
+
+        modelStream.subscribe(model => this.setState({model}));
     }
     render() {
-        let {model, actionStream} = this.props;
+        let {actionStream} = this.props;
+        let {model} = this.state;
         return <div>
-            <input type="text" value={model.field} onChange={this.onFieldChange} />
+            <input type="text" value={this.state.field} onChange={this.onFieldChange} />
             <button onClick={this.onAdd}>+</button>
             <TaskList model={model} actionStream={actionStream} />
-            <pre>{JSON.stringify(model.toJS(), null, 4)}</pre>
+            <pre>{JSON.stringify(model, null, 4)}</pre>
         </div>;
     }
 }
 
-
-let modelStream = actionStream.scan(initialModel, (model, action) => {
-    return action(model); });
-
-modelStream.subscribe(
-        model => React.render(<App model={model} actionStream={actionStream} />, document.body));
+React.render(<App actionStream={actionStream} />, document.body);

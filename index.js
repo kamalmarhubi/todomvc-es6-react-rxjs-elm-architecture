@@ -35,6 +35,8 @@ const Add = model => {
     model = model.set("field", "");
     return model;
 };
+const Clear = model => model.set("tasks", new List());
+
 
 // type Action
 //     = NoOp
@@ -107,6 +109,7 @@ class App extends React.Component {
     componentWillMount() {
         let {dispatcher} = this.props;
         this.onAdd = dispatcher.dispatch(magicMap(() => Add));
+        this.onClear = dispatcher.dispatch(magicMap(() => Clear));
         this.onFieldChange = dispatcher.dispatch(magicMap(withTargetValue(UpdateField)));
         dispatcher.rootComponent = this;
     }
@@ -114,6 +117,7 @@ class App extends React.Component {
         let {dispatcher} = this.props;
         let {model} = this.state;
         return <div>
+            <button onClick={this.onClear}>Clear list</button>
             <input type="text" value={model.field} onChange={this.onFieldChange} />
             <button onClick={this.onAdd}>+</button>
             <TaskList tasks={model.tasks} dispatcher={dispatcher} />

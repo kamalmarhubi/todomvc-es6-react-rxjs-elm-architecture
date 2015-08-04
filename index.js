@@ -55,8 +55,9 @@ let PureRender = reactMixin.decorate(React.addons.PureRenderMixin);
 @PureRender
 class TaskList extends React.Component {
     render() {
+        let {dispatcher, tasks} = this.props;
         return <ul>
-            {this.props.model.tasks.map(task =>
+            {tasks.map(task =>
                     <TaskC key={task.id} description={task.description} />)}
         </ul>;
     }
@@ -115,7 +116,7 @@ class App extends React.Component {
         return <div>
             <input type="text" value={model.field} onChange={this.onFieldChange} />
             <button onClick={this.onAdd}>+</button>
-            <TaskList model={model} dispatcher={dispatcher} />
+            <TaskList tasks={model.tasks} dispatcher={dispatcher} />
             <pre>{JSON.stringify(model, null, 4)}</pre>
         </div>;
     }

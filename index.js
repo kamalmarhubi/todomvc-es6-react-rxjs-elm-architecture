@@ -36,7 +36,7 @@ const Add = model => {
     return model;
 };
 const Clear = model => model.set("tasks", new List());
-const Remove = id => model => model.set("tasks", model.tasks.delete(model.tasks.findIndex(t => t.id === id)));
+const Delete = id => model => model.set("tasks", model.tasks.delete(model.tasks.findIndex(t => t.id === id)));
 
 
 
@@ -74,10 +74,10 @@ class TaskList extends React.Component {
 class TaskC extends React.Component {
     componentWillMount() {
         let {dispatcher, id} = this.props;
-        this.onRemove = dispatcher.dispatch(magicMap(() => Remove(id)));
+        this.onDelete = dispatcher.dispatch(magicMap(() => Delete(id)));
     }
     render() {
-        return <li><button onClick={this.onRemove}>x</button> {this.props.description}</li>;
+        return <li><button onClick={this.onDelete}>x</button> {this.props.description}</li>;
     }
 }
 

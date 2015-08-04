@@ -100,34 +100,41 @@ let actionStream = new Rx.BehaviorSubject(NoOp);
 let modelStream = actionStream.scan(initialModel, (model, action) => {
     return action(model); });
 
+class Dispatcher {
+    actionStream = new Rx.Subject();
+    dispatch(fn) {
+        let s = FuncSubject.create();
+        fn(s).subscribe(actionStream);
+        return s;
+    }
+}
+
+let dispatcher = new Dispatcher(actionStream);
+
+
 @PureRender
 class App extends React.Component {
     componentWillMount() {
-        let {actionStream} = this.props;
+        this.onAdd = dispatcher.dispatch(obs => obs.map(() => Add));
+        this.onFieldChange = dispatcher.dispatch(obs => obs.map(evt => UpdateField(evt.target.value)));
 
-        let onAdd = FuncSubject.create()
-          , onFieldChange = FuncSubject.create()
-        ;
-
-        Rx.Observable.merge(
-                onAdd.map(evt => Add),
-                onFieldChange.map(evt => UpdateField(evt.target.value)))
-            .subscribe(actionStream);
-
-        Object.assign(this, {onAdd, onFieldChange});
-
-        modelStream.subscribe(model => this.setState({model}));
+        this.modelSubscription = modelStream.subscribe(model => this.setState({model}));
     }
     render() {
         let {actionStream} = this.props;
         let {model} = this.state;
         return <div>
-            <input type="text" value={this.state.field} onChange={this.onFieldChange} />
+            <input type="text" value={model.field} onChange={this.onFieldChange} />
             <button onClick={this.onAdd}>+</button>
             <TaskList model={model} actionStream={actionStream} />
             <pre>{JSON.stringify(model, null, 4)}</pre>
         </div>;
     }
+    componentWillUnmount() {
+        this.modelSubscription.dispose();
+        this.modelSubscription = null;
+    }
+
 }
 
 React.render(<App actionStream={actionStream} />, document.body);

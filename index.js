@@ -93,16 +93,12 @@ class TaskC extends React.Component {
     }
 }
 
-let actionStream = new Rx.BehaviorSubject(NoOp);
-
-let modelStream = actionStream.scan(initialModel, (model, action) => {
-    return action(model); });
-
 class Dispatcher {
-    actionStream = new Rx.Subject();
+    actionStream = new Rx.BehaviorSubject(NoOp);
+    modelStream = this.actionStream.scan(initialModel, (model, action) => { return action(model); });
     dispatch(fn) {
         let s = FuncSubject.create();
-        fn(s).subscribe(actionStream);
+        fn(s).subscribe(this.actionStream);
         return s;
     }
 }
@@ -110,24 +106,25 @@ class Dispatcher {
 let magicMap = f => obs => obs.map(f);
 let withTargetValue = f => evt => f(evt.target.value);
 
-let dispatcher = new Dispatcher(actionStream);
+let dispatcher = new Dispatcher();
 
 
 @PureRender
 class App extends React.Component {
     componentWillMount() {
+        let {dispatcher} = this.props;
         this.onAdd = dispatcher.dispatch(magicMap(() => Add));
         this.onFieldChange = dispatcher.dispatch(magicMap(withTargetValue(UpdateField)));
 
-        this.modelSubscription = modelStream.subscribe(model => this.setState({model}));
+        this.modelSubscription = dispatcher.modelStream.subscribe(model => this.setState({model}));
     }
     render() {
-        let {actionStream} = this.props;
+        let {dispatcher} = this.props;
         let {model} = this.state;
         return <div>
             <input type="text" value={model.field} onChange={this.onFieldChange} />
             <button onClick={this.onAdd}>+</button>
-            <TaskList model={model} actionStream={actionStream} />
+            <TaskList model={model} dispatcher={dispatcher} />
             <pre>{JSON.stringify(model, null, 4)}</pre>
         </div>;
     }
@@ -138,4 +135,4 @@ class App extends React.Component {
 
 }
 
-React.render(<App actionStream={actionStream} />, document.body);
+React.render(<App dispatcher={dispatcher} />, document.body);

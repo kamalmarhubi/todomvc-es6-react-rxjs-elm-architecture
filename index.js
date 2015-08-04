@@ -82,7 +82,7 @@ class TaskC extends React.Component {
     }
     render() {
         return <li>
-            <input type="checkbox" checked={this.props.completed} onClick={this.onCheck} />
+            <input type="checkbox" checked={this.props.completed} onChange={this.onCheck} />
             <button onClick={this.onDelete}>x</button> {this.props.description}
         </li>;
     }

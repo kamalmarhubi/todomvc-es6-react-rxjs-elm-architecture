@@ -93,8 +93,6 @@ class TaskC extends React.Component {
     }
 }
 
-let withTargetValue = f => evt => f(evt.target.value);
-
 let actionStream = new Rx.BehaviorSubject(NoOp);
 
 let modelStream = actionStream.scan(initialModel, (model, action) => {
@@ -109,14 +107,17 @@ class Dispatcher {
     }
 }
 
+let magicMap = f => obs => obs.map(f);
+let withTargetValue = f => evt => f(evt.target.value);
+
 let dispatcher = new Dispatcher(actionStream);
 
 
 @PureRender
 class App extends React.Component {
     componentWillMount() {
-        this.onAdd = dispatcher.dispatch(obs => obs.map(() => Add));
-        this.onFieldChange = dispatcher.dispatch(obs => obs.map(evt => UpdateField(evt.target.value)));
+        this.onAdd = dispatcher.dispatch(magicMap(() => Add));
+        this.onFieldChange = dispatcher.dispatch(magicMap(withTargetValue(UpdateField)));
 
         this.modelSubscription = modelStream.subscribe(model => this.setState({model}));
     }

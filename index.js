@@ -37,6 +37,8 @@ const Add = model => {
 };
 const Clear = model => model.set("tasks", new List());
 const Delete = id => model => model.set("tasks", model.tasks.delete(model.tasks.findIndex(t => t.id === id)));
+const DeleteComplete = model => model.set("tasks", model.tasks.filterNot(task => task.completed));
+const Check = (id, bool) => model => model.set("tasks", model.tasks.map(t => t.id === id ? t.set("completed", bool) : t));
 
 
 
@@ -65,7 +67,8 @@ class TaskList extends React.Component {
                 <TaskC
                     key={task.id}
                     description={task.description}
-                    id={task.id} dispatcher={dispatcher} />)}
+                    id={task.id} dispatcher={dispatcher} 
+                    completed={task.completed} />)}
         </ul>;
     }
 }
@@ -75,9 +78,13 @@ class TaskC extends React.Component {
     componentWillMount() {
         let {dispatcher, id} = this.props;
         this.onDelete = dispatcher.dispatch(magicMap(() => Delete(id)));
+        this.onCheck = dispatcher.dispatch(magicMap(evt => Check(id, !this.props.completed)));
     }
     render() {
-        return <li><button onClick={this.onDelete}>x</button> {this.props.description}</li>;
+        return <li>
+            <input type="checkbox" checked={this.props.completed} onClick={this.onCheck} />
+            <button onClick={this.onDelete}>x</button> {this.props.description}
+        </li>;
     }
 }
 
@@ -119,6 +126,7 @@ class App extends React.Component {
         let {dispatcher} = this.props;
         this.onAdd = dispatcher.dispatch(magicMap(() => Add));
         this.onClear = dispatcher.dispatch(magicMap(() => Clear));
+        this.onDeleteComplete = dispatcher.dispatch(magicMap(() => DeleteComplete));
         this.onFieldChange = dispatcher.dispatch(magicMap(withTargetValue(UpdateField)));
         dispatcher.rootComponent = this;
     }
@@ -127,6 +135,7 @@ class App extends React.Component {
         let {model} = this.state;
         return <div>
             <button onClick={this.onClear}>Clear list</button>
+            <button onClick={this.onDeleteComplete}>Clear completed</button>
             <input type="text" value={model.field} onChange={this.onFieldChange} />
             <button onClick={this.onAdd}>+</button>
             <TaskList tasks={model.tasks} dispatcher={dispatcher} />

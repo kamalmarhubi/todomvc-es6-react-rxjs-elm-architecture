@@ -39,7 +39,7 @@ const Clear = model => model.set("tasks", new List());
 const Delete = id => model => model.set("tasks", model.tasks.delete(model.tasks.findIndex(t => t.id === id)));
 const DeleteComplete = model => model.set("tasks", model.tasks.filterNot(task => task.completed));
 const Check = (id, bool) => model => model.set("tasks", model.tasks.map(t => t.id === id ? t.set("completed", bool) : t));
-
+const CheckAll = bool => model => model.set("tasks", model.tasks.map(t => t.set("completed", bool)));
 
 
 // type Action
@@ -127,13 +127,16 @@ class App extends React.Component {
         this.onAdd = dispatcher.dispatch(magicMap(() => Add));
         this.onClear = dispatcher.dispatch(magicMap(() => Clear));
         this.onDeleteComplete = dispatcher.dispatch(magicMap(() => DeleteComplete));
+        this.onCheckAll = dispatcher.dispatch(magicMap(() => CheckAll(!this.state.model.tasks.every(t => t.completed))));
         this.onFieldChange = dispatcher.dispatch(magicMap(withTargetValue(UpdateField)));
         dispatcher.rootComponent = this;
     }
     render() {
         let {dispatcher} = this.props;
         let {model} = this.state;
+        let allCompleted = model.tasks.every(t => t.completed);
         return <div>
+            <input type="checkbox" checked={allCompleted} onChange={this.onCheckAll} />
             <button onClick={this.onClear}>Clear list</button>
             <button onClick={this.onDeleteComplete}>Clear completed</button>
             <input type="text" value={model.field} onChange={this.onFieldChange} />

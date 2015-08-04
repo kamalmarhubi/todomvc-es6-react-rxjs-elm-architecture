@@ -36,6 +36,8 @@ const Add = model => {
     return model;
 };
 const Clear = model => model.set("tasks", new List());
+const Remove = id => model => model.set("tasks", model.tasks.delete(model.tasks.findIndex(t => t.id === id)));
+
 
 
 // type Action
@@ -60,15 +62,22 @@ class TaskList extends React.Component {
         let {dispatcher, tasks} = this.props;
         return <ul>
             {tasks.map(task =>
-                    <TaskC key={task.id} description={task.description} />)}
+                <TaskC
+                    key={task.id}
+                    description={task.description}
+                    id={task.id} dispatcher={dispatcher} />)}
         </ul>;
     }
 }
 
 @PureRender
 class TaskC extends React.Component {
+    componentWillMount() {
+        let {dispatcher, id} = this.props;
+        this.onRemove = dispatcher.dispatch(magicMap(() => Remove(id)));
+    }
     render() {
-        return <li>{this.props.description}</li>;
+        return <li><button onClick={this.onRemove}>x</button> {this.props.description}</li>;
     }
 }
 

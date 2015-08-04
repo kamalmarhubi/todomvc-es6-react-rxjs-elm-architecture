@@ -96,10 +96,17 @@ class TaskC extends React.Component {
 class Dispatcher {
     actionStream = new Rx.BehaviorSubject(NoOp);
     modelStream = this.actionStream.scan(initialModel, (model, action) => { return action(model); });
+    set rootComponent(component) {
+        this._rootComponent = component;
+        this._subscription = this.modelStream.subscribe(new RenderObserver(this._rootComponent));
+    }
     dispatch(fn) {
         let s = FuncSubject.create();
         fn(s).subscribe(this.actionStream);
         return s;
+    }
+    dispose() {
+        this.subscription.dispose();
     }
 }
 
@@ -108,6 +115,15 @@ let withTargetValue = f => evt => f(evt.target.value);
 
 let dispatcher = new Dispatcher();
 
+class RenderObserver {
+    constructor(component) {
+        this.component = component;
+    }
+
+    onNext(model) {
+        this.component.setState({model});
+    }
+}
 
 @PureRender
 class App extends React.Component {
@@ -115,8 +131,7 @@ class App extends React.Component {
         let {dispatcher} = this.props;
         this.onAdd = dispatcher.dispatch(magicMap(() => Add));
         this.onFieldChange = dispatcher.dispatch(magicMap(withTargetValue(UpdateField)));
-
-        this.modelSubscription = dispatcher.modelStream.subscribe(model => this.setState({model}));
+        dispatcher.rootComponent = this;
     }
     render() {
         let {dispatcher} = this.props;

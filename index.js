@@ -5,19 +5,6 @@ import Rx from "rx";
 import React from "react/addons";
 
 
-// Model
-
-//var Model = Record({value: 0});
-//
-//const inc = model => model.set("value", model.value + 1);
-//const Inc = () => inc;
-//
-//const dec = model => model.set("value", model.value - 1);
-//const Dec = () => dec;
-//
-//const reset = model => 0;
-//const Reset = () => reset;
-
 const All = Symbol("All");
 const Completed = Symbol("Completed");
 const Active = Symbol("Active");
@@ -64,17 +51,6 @@ const Add = model => {
 // View
 
 let PureRender = reactMixin.decorate(React.addons.PureRenderMixin);
-
-@PureRender
-class Value extends React.Component {
-    render() {
-        return <div>
-            {this.props.model.value}
-            <button onClick={() => this.props.actionStream.onNext(Inc())}>+</button>
-            <button onClick={() => this.props.actionStream.onNext(Dec())}>-</button>
-        </div>;
-    }
-}
 
 @PureRender
 class TaskList extends React.Component {

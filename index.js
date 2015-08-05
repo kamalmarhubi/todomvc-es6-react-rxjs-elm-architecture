@@ -40,6 +40,7 @@ const Delete = id => model => model.set("tasks", model.tasks.delete(model.tasks.
 const DeleteComplete = model => model.set("tasks", model.tasks.filterNot(task => task.completed));
 const Check = (id, bool) => model => model.set("tasks", model.tasks.map(t => t.id === id ? t.set("completed", bool) : t));
 const CheckAll = bool => model => model.set("tasks", model.tasks.map(t => t.set("completed", bool)));
+const ChangeVisibility = visibility => model => model.set("visibility", visibility);
 
 
 // type Action
@@ -58,12 +59,18 @@ const CheckAll = bool => model => model.set("tasks", model.tasks.map(t => t.set(
 
 let PureRender = reactMixin.decorate(React.addons.PureRenderMixin);
 
+let vizCheck = viz => {
+    if (viz === All) { return t => t; }
+    else if (viz === Completed) { return t => t.completed; }
+    else return t => !t.completed;
+}
+
 @PureRender
 class TaskList extends React.Component {
     render() {
-        let {dispatcher, tasks} = this.props;
+        let {dispatcher, tasks, visibility} = this.props;
         return <ul>
-            {tasks.map(task =>
+            {tasks.filter(vizCheck(visibility)).map(task =>
                 <TaskC
                     key={task.id}
                     description={task.description}
@@ -129,6 +136,9 @@ class App extends React.Component {
         this.onDeleteComplete = dispatcher.dispatch(magicMap(() => DeleteComplete));
         this.onCheckAll = dispatcher.dispatch(magicMap(() => CheckAll(!this.state.model.tasks.every(t => t.completed))));
         this.onFieldChange = dispatcher.dispatch(magicMap(withTargetValue(UpdateField)));
+        this.onChangeVisibilityAll = dispatcher.dispatch(magicMap(() => ChangeVisibility(All)));
+        this.onChangeVisibilityCompleted = dispatcher.dispatch(magicMap(() => ChangeVisibility(Completed)));
+        this.onChangeVisibilityActive = dispatcher.dispatch(magicMap(() => ChangeVisibility(Active)));
         dispatcher.rootComponent = this;
     }
     render() {
@@ -141,7 +151,10 @@ class App extends React.Component {
             <button onClick={this.onDeleteComplete}>Clear completed</button>
             <input type="text" value={model.field} onChange={this.onFieldChange} />
             <button onClick={this.onAdd}>+</button>
-            <TaskList tasks={model.tasks} dispatcher={dispatcher} />
+            <TaskList tasks={model.tasks} dispatcher={dispatcher} visibility={model.visibility}/>
+            <button onClick={this.onChangeVisibilityAll}>all</button>
+            <button onClick={this.onChangeVisibilityCompleted}>completed</button>
+            <button onClick={this.onChangeVisibilityActive}>active</button>
             <pre>{JSON.stringify(model, null, 4)}</pre>
         </div>;
     }
